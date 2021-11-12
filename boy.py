@@ -1,4 +1,15 @@
 from pico2d import *
+import game_framework
+
+PIXEL_PER_METER = (30.0 / 0.6)
+RUN_SPEED_KMPH = 15.0
+RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
+RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
+RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
+
+TIME_PER_ACTION = 0.5
+ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+FRAMES_PER_ACTION = 8
 
 # Boy Event
 TOP_DOWN, BOTTOM_DOWN, RIGHT_DOWN, LEFT_DOWN, TOP_UP, BOTTOM_UP, RIGHT_UP, LEFT_UP, SLEEP_TIMER = range(9)
@@ -18,111 +29,95 @@ key_event_table = {
 class IdleState: # 가만히 서 있을때
     def enter(boy, event):
         if event == RIGHT_DOWN:
-            boy.velocity_x += 1
+            boy.velocity_x += RUN_SPEED_PPS
             boy.height = 0
         elif event == LEFT_DOWN:
-            boy.velocity_x -= 1
+            boy.velocity_x -= RUN_SPEED_PPS
             boy.height = 2
         elif event == TOP_DOWN:
-            boy.velocity_y += 1
+            boy.velocity_y += RUN_SPEED_PPS
             boy.height = 1
         elif event == BOTTOM_DOWN:
-            boy.velocity_y -= 1
+            boy.velocity_y -= RUN_SPEED_PPS
             boy.height = 3
         elif event == RIGHT_UP:
-            boy.velocity_x -= 1
+            boy.velocity_x -= RUN_SPEED_PPS
         elif event == LEFT_UP:
-            boy.velocity_x += 1
+            boy.velocity_x += RUN_SPEED_PPS
         elif event == TOP_UP:
-            boy.velocity_y -= 1
+            boy.velocity_y -= RUN_SPEED_PPS
         elif event == BOTTOM_UP:
-            boy.velocity_y += 1
-        # elif event == LEFT_DOWN and event == TOP_DOWN:
-        #     boy.velocity_x -= 1
-        #     boy.veloctiy_y += 1
-        # elif event == LEFT_DOWN and event == BOTTOM_DOWN:
-        #     boy.velocity_x -= 1
-        #     boy.veloctiy_y -= 1
-        # elif event == RIGHT_DOWN and event == TOP_DOWN:
-        #     boy.velocity_x += 1
-        #     boy.veloctiy_y += 1
-        # elif event == RIGHT_DOWN and event == BOTTOM_DOWN:
-        #     boy.velocity_x += 1
-        #     boy.veloctiy_y -= 1
+            boy.velocity_y += RUN_SPEED_PPS
         boy.timer = 1000
 
     def exit(boy, event):
         pass
 
     def do(boy):
-        boy.frame = (boy.frame + 1) % 7
+        boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 7
         boy.timer -= 1
         # if boy.timer == 0:
         #     boy.add_event(SLEEP_TIMER) # 가만히 서 있으면 SLEEP 상태로 간다.
 
     def draw(boy):
         if boy.velocity_x == 0 and boy.velocity_y == 0:
-            delay(0.1)
-            boy.image.clip_draw((boy.frame * 41) + 207, 3 * 52, 40, 52, boy.x, boy.y)
+            boy.image.clip_draw((int(boy.frame) * 41) + 210, 3 * 52, 40, 52, boy.x, boy.y)
         else:
-            boy.image.clip_draw(boy.frame * 41, boy.height * 52, 40, 52, boy.x, boy.y)
+            boy.image.clip_draw(int(boy.frame) * 41, boy.height * 52, 40, 52, boy.x, boy.y)
 
 
 class RunState: # 움직이는 상태
 
     def enter(boy, event):
         if event == RIGHT_DOWN:
-            boy.velocity_x += 1
+            boy.velocity_x += RUN_SPEED_PPS
             boy.height = 0
+            if event == TOP_DOWN:
+                boy.velocity_y += RUN_SPEED_PPS
+            elif event == BOTTOM_DOWN:
+                boy.velocity_y -= RUN_SPEED_PPS
         elif event == LEFT_DOWN:
-            boy.velocity_x -= 1
+            boy.velocity_x -= RUN_SPEED_PPS
             boy.height = 2
+            if event == TOP_DOWN:
+                boy.velocity_y += RUN_SPEED_PPS
+            elif event == BOTTOM_DOWN:
+                boy.velocity_y -= RUN_SPEED_PPS
         elif event == TOP_DOWN:
-            boy.velocity_y += 1
+            boy.velocity_y += RUN_SPEED_PPS
             boy.height = 1
         elif event == BOTTOM_DOWN:
-            boy.velocity_y -= 1
+            boy.velocity_y -= RUN_SPEED_PPS
             boy.height = 3
         elif event == RIGHT_UP:
-            boy.velocity_x -= 1
+            boy.velocity_x -= RUN_SPEED_PPS
         elif event == LEFT_UP:
-            boy.velocity_x += 1
+            boy.velocity_x += RUN_SPEED_PPS
         elif event == TOP_UP:
-            boy.velocity_y -= 1
+            boy.velocity_y -= RUN_SPEED_PPS
         elif event == BOTTOM_UP:
-            boy.velocity_y += 1
-        # elif event == LEFT_DOWN and event == TOP_DOWN:
-        #     boy.velocity_x -= 1
-        #     boy.veloctiy_y += 1
-        # elif event == LEFT_DOWN and event == BOTTOM_DOWN:
-        #     boy.velocity_x -= 1
-        #     boy.veloctiy_y -= 1
-        # elif event == RIGHT_DOWN and event == TOP_DOWN:
-        #     boy.velocity_x += 1
-        #     boy.veloctiy_y += 1
-        # elif event == RIGHT_DOWN and event == BOTTOM_DOWN:
-        #     boy.velocity_x += 1
-        #     boy.veloctiy_y -= 1
+            boy.velocity_y += RUN_SPEED_PPS
 
-        boy.dir_x = boy.velocity_x
-        boy.dir_y = boy.velocity_y
+        boy.dir_x = int(boy.velocity_x)
+        boy.dir_y = int(boy.velocity_y)
 
     def exit(boy, event):
         pass
 
+    @staticmethod
     def do(boy):
-        boy.frame = (boy.frame + 1) % 4
+        boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 4
         boy.timer -= 1
-        boy.x += boy.velocity_x
-        boy.y += boy.velocity_y
-        boy.x = clamp(25, boy.x, 800-25)
-        boy.y = clamp(25, boy.y, 600 - 25)
+        boy.x += boy.velocity_x * game_framework.frame_time
+        boy.y += boy.velocity_y * game_framework.frame_time
+        boy.x = clamp(100, boy.x, 800 - 100)
+        boy.y = clamp(100, boy.y, 600 - 50)
 
     def draw(boy):
         if boy.velocity_x == 0 and boy.velocity_y == 0:
-            boy.image.clip_draw(5 * 40, 3 * 52, 40, 52, boy.x, boy.y)
+            boy.image.clip_draw(5 * 41, 3 * 52, 40, 52, boy.x, boy.y)
         else:
-            boy.image.clip_draw(boy.frame * 41, boy.height * 52, 40, 52, boy.x, boy.y)
+            boy.image.clip_draw(int(boy.frame) * 41, boy.height * 52, 40, 52, boy.x, boy.y)
 
 
 # class SleepState:

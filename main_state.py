@@ -1,5 +1,6 @@
 import game_framework
 import title_state
+import game_world
 from pico2d import *
 
 from dungeon import Dungeon
@@ -30,11 +31,11 @@ def enter():
     global dungeon,boy
     boy = Boy()
     dungeon = Dungeon()
+    game_world.add_object(dungeon, 0)
+    game_world.add_object(boy, 1)
 
 def exit():
-    global dungeon,boy
-    del dungeon
-    del boy
+    game_world.clear()
 
 def pause():
     pass
@@ -93,8 +94,8 @@ def update():
 def draw():
     # global x,y,dirx,diry,frame
     clear_canvas()
-    dungeon.draw()
-    boy.draw()
+    for game_object in game_world.all_objects():
+        game_object.draw()
     update_canvas()
     #
     #
