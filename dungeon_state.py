@@ -7,7 +7,7 @@ from pico2d import *
 from village_portal import Portal
 from dungeon import Dungeon
 from slime import Slime
-from boy import Boy
+from boy import *
 
 
 name = "dungeon_state"
@@ -55,6 +55,11 @@ def update():
         if collide(boy, slime):
             slime.idle_height = 4 * 27
             boy.hp -= 1
+            if boy.cur_state == AttackState:
+                slime.hp -= 10
+                if slime.hp <= 0:
+                    slimes.remove(slime)
+                    game_world.remove_object(slime)
 
     if boy.hp <= 0:
         game_framework.change_state(loading_state)

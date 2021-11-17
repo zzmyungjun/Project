@@ -9,3 +9,13 @@ class Sword_1:
 
     def update(self):
         pass
+
+class Sword_2:
+    def __init__(self):
+        self.image = load_image('Sword_2.png')
+
+    def draw(self):
+        self.image.draw(373, 340)
+
+    def update(self):
+        pass

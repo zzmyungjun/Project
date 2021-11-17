@@ -11,15 +11,19 @@ name = "shop_state"
 shop = None
 background = None
 sword_1 = None
+sword_2 = None
 
 def enter():
-    global shop, background, sword_1
+    global shop, background, sword_1, sword_2
     shop = Shop()
     background = Background()
     sword_1 = Sword_1()
+    sword_2 = Sword_2()
     game_world.add_object(background, 0)
     game_world.add_object(shop, 1)
     game_world.add_object(sword_1, 1)
+    game_world.add_object(sword_2, 1)
+
 def exit():
     game_world.clear()
 

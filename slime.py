@@ -10,7 +10,7 @@ class Slime:
     image = None
 
     def get_bb(self):
-        return self.x - 30, self.y - 30, self.x + 30, self.y + 30
+        return self.x - 11, self.y - 10, self.x + 10, self.y + 10
 
     def __init__(self):
         if Slime.image == None:
@@ -19,10 +19,13 @@ class Slime:
         self.frame = 0
         self.height = 0
         self.idle_height = 27
+        self.hp = 500
+        self.font = load_font('ENCR10B.TTF', 8)
 
     def draw(self):
         self.image.clip_draw((int(self.frame) * 27), self.idle_height, 27, 27, self.x, self.y)
         draw_rectangle(*self.get_bb())
+        self.font.draw(self.x, self.y + 20, '(Hp: %0.0f)' % self.hp, (255, 255, 0))
 
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 5
