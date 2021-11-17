@@ -6,3 +6,6 @@ class Village:
 
     def draw(self):
         self.image.draw(1024 // 2, 768 // 2)
+
+    def update(self):
+        pass

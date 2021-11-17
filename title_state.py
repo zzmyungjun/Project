@@ -4,17 +4,22 @@ from pico2d import *
 
 
 name = "TitleState"
-image = None
-
+logo = None
+animation = None
+running = False
+a = 0
+b = 0
 
 def enter():
-    global image
-    image = load_image('moonlightertitle.jpg')
+    global logo, animation
+    animation = load_image('bubble_sprite.png')
+    logo = load_image('GameLogo_1.png')
 
 
 def exit():
-    global image
-    del(image)
+    global logo, animation
+    del(logo)
+    del(animation)
 
 
 def handle_events():
@@ -30,9 +35,14 @@ def handle_events():
 
 
 def draw():
+    global a,b
     clear_canvas()
-    image.draw(400,300)
+    animation.clip_draw(1024 * a, 768 * b, 1024, 768, 512, 383)
+    logo.draw(512, 450)
     update_canvas()
+    delay(0.1)
+    a = (a + 1) % 4
+    b = (b + 1) % 4
 
 
 
