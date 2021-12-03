@@ -2,6 +2,8 @@ import game_framework
 import loading_state
 import main_state
 import game_world
+import server
+import collision
 from pico2d import *
 
 from village_portal import Portal
@@ -11,22 +13,18 @@ from boy import *
 
 
 name = "dungeon_state"
-boy = None
-dungeon = None
-portal = None
-slimes = []
+
 
 def enter():
-    global dungeon, boy, slimes, portal
-    boy = Boy()
-    dungeon = Dungeon()
-    slimes = [Slime() for i in range(10)]
-    portal = Portal()
+    server.boy = Boy()
+    server.dungeon = Dungeon()
+    server.slimes = [Slime() for i in range(6)]
+    server.portal = Portal()
 
-    game_world.add_object(dungeon, 0)
-    game_world.add_objects(slimes, 1)
-    game_world.add_object(boy, 1)
-    game_world.add_object(portal, 1)
+    game_world.add_object(server.dungeon, 0)
+    game_world.add_objects(server.slimes, 1)
+    game_world.add_object(server.boy, 1)
+    game_world.add_object(server.portal, 1)
 
 def exit():
     game_world.clear()
@@ -46,24 +44,24 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         else:
-            boy.handle_event(event)
+            server.boy.handle_event(event)
 
 def update():
     for game_object in game_world.all_objects():
         game_object.update()
-    for slime in slimes:
-        if collide(boy, slime):
+    for slime in server.slimes:
+        if collision.collide(server.boy, slime):
             slime.idle_height = 4 * 27
-            boy.hp -= 1
-            if boy.cur_state == AttackState:
+            server.boy.hp -= 1
+            if server.boy.cur_state == AttackState:
                 slime.hp -= 10
                 if slime.hp <= 0:
-                    slimes.remove(slime)
+                    server.slimes.remove(slime)
                     game_world.remove_object(slime)
 
-    if boy.hp <= 0:
+    if server.boy.hp <= 0:
         game_framework.change_state(loading_state)
-    if collide(portal, boy):
+    if collision.collide(server.portal, server.boy):
         game_framework.change_state(loading_state)
 
 
@@ -72,14 +70,3 @@ def draw():
     for game_object in game_world.all_objects():
         game_object.draw()
     update_canvas()
-
-def collide(a, b):
-    left_a, bottom_a, right_a, top_a = a.get_bb()
-    left_b, bottom_b, right_b, top_b = b.get_bb()
-
-    if left_a > right_b: return False
-    if right_a < left_b: return False
-    if top_a < bottom_b: return False
-    if bottom_a > top_b: return False
-
-    return True

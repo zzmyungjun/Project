@@ -1,23 +1,21 @@
 import game_framework
 import dungeon_state
 import main_state
+import server
 from pico2d import *
 
 
 name = "loading_state"
-animation = None
 a = 0
 b = 0
 
 def enter():
-    global animation
-    animation = load_image('bubble_sprite.png')
+    server.animation = load_image('bubble_sprite.png')
 
 
 
 def exit():
-    global animation
-    del(animation)
+    del(server.animation)
 
 
 def handle_events():
@@ -35,7 +33,7 @@ def handle_events():
 def draw():
     global a,b
     clear_canvas()
-    animation.clip_draw(1024 * a, 768 * b, 1024, 768, 512, 383)
+    server.animation.clip_draw(1024 * a, 768 * b, 1024, 768, 512, 383)
     update_canvas()
     delay(0.1)
     a = (a + 1) % 4

@@ -2,6 +2,7 @@ import game_framework
 import loading_state
 import shop_state
 import game_world
+import server
 from pico2d import *
 
 from village import Village
@@ -11,25 +12,20 @@ from House import House
 from dungeon_portal import Portal
 
 name = "main_state"
-boy = None
-village = None
-portal = None
-npc1 = None
-house = None
+
 
 def enter():
 
-    global village, boy, portal, npc1, house
-    boy = Boy()
-    village = Village()
-    portal = Portal()
-    npc1 = Npc1()
-    house = House()
-    game_world.add_object(village, 0)
-    game_world.add_object(portal, 1)
-    game_world.add_object(npc1, 1)
-    game_world.add_object(boy, 1)
-    game_world.add_object(house, 1)
+    server.boy = Boy()
+    server.village = Village()
+    server.portal = Portal()
+    server.npc1 = Npc1()
+    server.house = House()
+    game_world.add_object(server.village, 0)
+    game_world.add_object(server.portal, 1)
+    game_world.add_object(server.npc1, 1)
+    game_world.add_object(server.boy, 1)
+    game_world.add_object(server.house, 1)
 
 def exit():
     game_world.clear()
@@ -49,14 +45,14 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         else:
-            boy.handle_event(event)
+            server.boy.handle_event(event)
 
 def update():
     for game_object in game_world.all_objects():
         game_object.update()
-    if collide(portal, boy):
+    if collide(server.portal, server.boy):
         game_framework.change_state(loading_state)
-    if collide(npc1, boy):
+    if collide(server.npc1, server.boy):
         game_framework.change_state(shop_state)
 
 

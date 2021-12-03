@@ -1,7 +1,7 @@
 from pico2d import *
 import game_framework
 
-PIXEL_PER_METER = (30.0 / 0.6)
+PIXEL_PER_METER = (30.0 / 0.6) # 30 pixel 60cm
 RUN_SPEED_KMPH = 15.0
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
@@ -129,6 +129,9 @@ class AttackState:
             else:
                 boy.height = 3
 
+    def get_bb(boy): # 방향에 따라 if문으로 범위 조절 지금은 아래밖에 못치니까 y값 변환
+        return boy.x - 15, boy.y - 17, boy.x + 10, boy.y + 18
+
     def exit(boy, event):
         pass
 
@@ -142,11 +145,12 @@ class AttackState:
         boy.image.clip_draw(int(boy.frame) * 31, boy.height * 40, 31, 40, boy.x, boy.y)
 
 next_state_table = {
+
     IdleState: {TOP_UP: RunState, BOTTOM_UP: RunState,
                TOP_DOWN: RunState, BOTTOM_DOWN: RunState,
                RIGHT_UP: RunState, LEFT_UP: RunState,
                RIGHT_DOWN: RunState, LEFT_DOWN: RunState,
-               Z_DOWN: AttackState
+               Z_DOWN: AttackState, Z_UP: IdleState
                },
 
     RunState: {TOP_UP: IdleState, BOTTOM_UP: IdleState,
@@ -207,4 +211,7 @@ class Boy:
             self.add_event((key_event))
 
     def get_bb(self):
-        return self.x - 15, self.y - 17, self.x + 10, self.y + 18
+        if self.cur_state == AttackState:
+            return self.x - 20, self.y - 22, self.x + 15, self.y + 23
+        else:
+            return self.x - 15, self.y - 17, self.x + 10, self.y + 18
