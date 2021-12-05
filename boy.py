@@ -1,5 +1,8 @@
 from pico2d import *
 import game_framework
+import collision
+import server
+import game_world
 
 PIXEL_PER_METER = (30.0 / 0.6) # 30 pixel 60cm
 RUN_SPEED_KMPH = 15.0
@@ -28,44 +31,44 @@ key_event_table = {
     (SDL_KEYUP, SDLK_z): Z_UP
 }
 
-class IdleState: # 가만히 서 있을때
-    def enter(boy, event):
-        if event == RIGHT_DOWN:
-            boy.velocity_x += RUN_SPEED_PPS
-            boy.height = 4
-        elif event == LEFT_DOWN:
-            boy.velocity_x -= RUN_SPEED_PPS
-            boy.height = 5
-        elif event == TOP_DOWN:
-            boy.velocity_y += RUN_SPEED_PPS
-            boy.height = 7
-        elif event == BOTTOM_DOWN:
-            boy.velocity_y -= RUN_SPEED_PPS
-            boy.height = 6
-        elif event == RIGHT_UP:
-            boy.velocity_x -= RUN_SPEED_PPS
-            boy.height = 4
-        elif event == LEFT_UP:
-            boy.velocity_x += RUN_SPEED_PPS
-            boy.height = 5
-        elif event == TOP_UP:
-            boy.velocity_y -= RUN_SPEED_PPS
-            boy.height = 7
-        elif event == BOTTOM_UP:
-            boy.velocity_y += RUN_SPEED_PPS
-            boy.height = 6
-
-    def exit(boy, event):
-        pass
-
-    def do(boy):
-        boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 4
-
-    def draw(boy):
-        if boy.dir_x == 0 and boy.dir_y == 0:
-            boy.image.clip_draw(int(boy.frame) * 31, boy.height * 40, 31, 40, boy.x, boy.y)
-        else:
-            boy.image.clip_draw(int(boy.frame) * 31, boy.height * 40, 31, 40, boy.x, boy.y)
+# class IdleState: # 가만히 서 있을때
+#     def enter(boy, event):
+#         if event == RIGHT_DOWN:
+#             boy.velocity_x += RUN_SPEED_PPS
+#             boy.height = 4
+#         elif event == LEFT_DOWN:
+#             boy.velocity_x -= RUN_SPEED_PPS
+#             boy.height = 5
+#         elif event == TOP_DOWN:
+#             boy.velocity_y += RUN_SPEED_PPS
+#             boy.height = 7
+#         elif event == BOTTOM_DOWN:
+#             boy.velocity_y -= RUN_SPEED_PPS
+#             boy.height = 6
+#         elif event == RIGHT_UP:
+#             boy.velocity_x -= RUN_SPEED_PPS
+#             boy.height = 4
+#         elif event == LEFT_UP:
+#             boy.velocity_x += RUN_SPEED_PPS
+#             boy.height = 5
+#         elif event == TOP_UP:
+#             boy.velocity_y -= RUN_SPEED_PPS
+#             boy.height = 7
+#         elif event == BOTTOM_UP:
+#             boy.velocity_y += RUN_SPEED_PPS
+#             boy.height = 6
+#
+#     def exit(boy, event):
+#         pass
+#
+#     def do(boy):
+#         boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 4
+#
+#     def draw(boy):
+#         if boy.dir_x == 0 and boy.dir_y == 0:
+#             boy.image.clip_draw(int(boy.frame) * 31, boy.height * 40, 31, 40, boy.x, boy.y)
+#         else:
+#             boy.image.clip_draw(int(boy.frame) * 31, boy.height * 40, 31, 40, boy.x, boy.y)
 
 
 class RunState: # 움직이는 상태
@@ -103,18 +106,26 @@ class RunState: # 움직이는 상태
     def exit(boy, event):
         pass
 
-    @staticmethod
     def do(boy):
         boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 6
         boy.x += boy.velocity_x * game_framework.frame_time
         boy.y += boy.velocity_y * game_framework.frame_time
         boy.x = clamp(50, boy.x, 1024-50)
         boy.y = clamp(50, boy.y, 768-50)
+
     def draw(boy):
-        if boy.dir_x == 0 and boy.dir_y == 0:
-            boy.image.clip_draw(0, boy.height * 40, 31, 40, boy.x, boy.y)
-        else:
+        if boy.velocity_x > 0:
             boy.image.clip_draw(int(boy.frame) * 31, boy.height * 40, 31, 40, boy.x, boy.y)
+        elif boy.velocity_x < 0:
+            boy.image.clip_draw(int(boy.frame) * 31, boy.height * 40, 31, 40, boy.x, boy.y)
+        else:
+            if boy.velocity_y > 0 or boy.velocity_y < 0:
+                if boy.dir_y > 0:
+                    boy.image.clip_draw(int(boy.frame) * 31, boy.height * 40, 31, 40, boy.x, boy.y)
+                else:
+                    boy.image.clip_draw(int(boy.frame) * 31, boy.height * 40, 31, 40, boy.x, boy.y)
+            else: # idle 상태
+                boy.image.clip_draw((int(boy.frame) % 4) * 31, boy.height * 40, 31, 40, boy.x, boy.y)
 
 class AttackState:
 
@@ -128,6 +139,8 @@ class AttackState:
                 boy.height = 0
             else:
                 boy.height = 3
+        else:
+            boy.height = 6
 
     def get_bb(boy): # 방향에 따라 if문으로 범위 조절 지금은 아래밖에 못치니까 y값 변환
         return boy.x - 15, boy.y - 17, boy.x + 10, boy.y + 18
@@ -146,21 +159,25 @@ class AttackState:
 
 next_state_table = {
 
-    IdleState: {TOP_UP: RunState, BOTTOM_UP: RunState,
+    # IdleState: {TOP_UP: RunState, BOTTOM_UP: RunState,
+    #            TOP_DOWN: RunState, BOTTOM_DOWN: RunState,
+    #            RIGHT_UP: RunState, LEFT_UP: RunState,
+    #            RIGHT_DOWN: RunState, LEFT_DOWN: RunState,
+    #            Z_DOWN: AttackState, Z_UP: IdleState
+    #            },
+
+    RunState: {TOP_UP: RunState, BOTTOM_UP: RunState,
                TOP_DOWN: RunState, BOTTOM_DOWN: RunState,
                RIGHT_UP: RunState, LEFT_UP: RunState,
                RIGHT_DOWN: RunState, LEFT_DOWN: RunState,
-               Z_DOWN: AttackState, Z_UP: IdleState
+               Z_DOWN: AttackState, Z_UP: AttackState
                },
 
-    RunState: {TOP_UP: IdleState, BOTTOM_UP: IdleState,
-               TOP_DOWN: IdleState, BOTTOM_DOWN: IdleState,
-               RIGHT_UP: IdleState, LEFT_UP: IdleState,
-               RIGHT_DOWN: IdleState, LEFT_DOWN: IdleState,
-               Z_DOWN: AttackState
-               },
-
-    AttackState: {Z_DOWN: IdleState, Z_UP: IdleState
+    AttackState: {TOP_UP: RunState, BOTTOM_UP: RunState,
+               TOP_DOWN: RunState, BOTTOM_DOWN: RunState,
+               RIGHT_UP: RunState, LEFT_UP: RunState,
+               RIGHT_DOWN: RunState, LEFT_DOWN: RunState,
+                Z_DOWN: AttackState, Z_UP: RunState
     }
 }
 
@@ -179,8 +196,12 @@ class Boy:
         self.timer = 0
         self.hp = 1000
         self.event_que = []
-        self.cur_state = IdleState
+        self.cur_state = RunState
         self.cur_state.enter(self, None)
+        self.left = False
+        self.right = False
+        self.top = False
+        self.bottom = False
 
 
     def change_state(self,  state):
@@ -198,7 +219,8 @@ class Boy:
             self.cur_state.exit(self, event)
             self.cur_state = next_state_table[self.cur_state][event]
             self.cur_state.enter(self, event)
-
+        # for slime in server.slimes:
+        #     if collision.collide(server.boy, slime):
 
     def draw(self):
         self.cur_state.draw(self)
@@ -211,7 +233,10 @@ class Boy:
             self.add_event((key_event))
 
     def get_bb(self):
-        if self.cur_state == AttackState:
-            return self.x - 20, self.y - 22, self.x + 15, self.y + 23
-        else:
-            return self.x - 15, self.y - 17, self.x + 10, self.y + 18
+        return self.x - 15, self.y - 17, self.x + 10, self.y + 18
+
+    # def get_bb_attack(self):
+    #     if self.cur_state == AttackState:
+    #         return self.x - 20, self.y - 22, self.x + 20, self.y + 20
+    #     else:
+    #         return self.x - 15, self.y - 17, self.x + 10, self.y + 18

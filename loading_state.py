@@ -2,6 +2,7 @@ import game_framework
 import dungeon_state
 import main_state
 import server
+import bossroom1_state
 from pico2d import *
 
 
@@ -11,7 +12,6 @@ b = 0
 
 def enter():
     server.animation = load_image('bubble_sprite.png')
-
 
 
 def exit():
@@ -27,7 +27,9 @@ def handle_events():
             if (event.type, event.key) == (SDL_KEYDOWN, SDLK_ESCAPE):
                 game_framework.change_state(main_state)
             elif (event.type, event.key) == (SDL_KEYDOWN, SDLK_SPACE):
-                game_framework.change_state(dungeon_state)
+                game_framework.change_state(bossroom1_state)
+            # elif (event.type, event.key) == (SDL_KEYDOWN, SDLK_b) and server.count == 1:
+            #     game_framework.change_state(bossroom1_state)
 
 
 def draw():

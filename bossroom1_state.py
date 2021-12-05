@@ -1,5 +1,6 @@
 import game_framework
 import loading_state
+import bossroom1_state
 import main_state
 import game_world
 import server
@@ -7,22 +8,25 @@ import collision
 from pico2d import *
 
 from dungeon_portal import Portal
-from dungeon import Dungeon
+from bossroom import Bossroom_1
+from boss import Boss1
 from slime import Slime
 from boy import *
 
 
-name = "dungeon_state"
+name = "bossroom1_state"
 
 
 def enter():
     server.boy = Boy()
-    server.dungeon = Dungeon()
-    server.slimes = [Slime() for i in range(6)]
+    server.bossroom1 = Bossroom_1()
+    server.boss1 = Boss1()
+    # server.slimes = [Slime() for i in range(6)]
     server.portal = Portal()
 
-    game_world.add_object(server.dungeon, 0)
-    game_world.add_objects(server.slimes, 1)
+    game_world.add_object(server.bossroom1, 0)
+    # game_world.add_objects(server.slimes, 1)
+    game_world.add_object(server.boss1, 1)
     game_world.add_object(server.boy, 1)
     game_world.add_object(server.portal, 1)
 
@@ -59,14 +63,14 @@ def update():
                     server.slimes.remove(slime)
                     game_world.remove_object(slime)
 
-    if len(server.slimes) == 0:
-        server.count = 1
-        game_framework.change_state(loading_state)
+    # if len(server.slimes) == 0:
+    #     delay(1)
+    #     game_framework.change_state(bossroom1_state)
 
-    if server.boy.hp <= 0:
-        game_framework.change_state(loading_state)
-    if collision.collide(server.portal, server.boy):
-        game_framework.change_state(loading_state)
+    # if server.boy.hp <= 0:
+    #     game_framework.change_state(loading_state)
+    # if collision.collide(server.portal, server.boy):
+    #     game_framework.change_state(loading_state)
 
 
 def draw():

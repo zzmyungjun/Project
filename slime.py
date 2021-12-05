@@ -1,5 +1,7 @@
 import random
 from pico2d import *
+
+import collision
 import game_framework
 import server
 import math
@@ -19,10 +21,13 @@ class Slime:
     image = None
 
     def get_bb(self):
-        if self.idle_height == 27 * 4:
-            return self.x - 16, self.y - 15, self.x + 15, self.y + 15
-        else:
-            return self.x - 11, self.y - 10, self.x + 10, self.y + 10
+        return self.x - 15, self.y - 15, self.x + 15, self.y + 15
+
+    # def get_bb_attack(self):
+    #     if self.idle_height == 27 * 4:
+    #         return self.x - 16, self.y - 15, self.x + 15, self.y + 15
+    #     else:
+    #         return self.x - 11, self.y - 10, self.x + 10, self.y + 10
 
     def __init__(self):
         if Slime.image == None:
@@ -33,6 +38,7 @@ class Slime:
         self.idle_height = 27
         self.speed = 0
         self.hp = 500
+        self.time = 5
         self.timer = 1
         self.dir = random.random()*2*math.pi
         self.font = load_font('ENCR10B.TTF', 8)
@@ -69,6 +75,15 @@ class Slime:
 
     def update(self):
         self.bt.run()
+        # for slime in server.slimes:
+        #     if collision.collide(slime, server.boy):
+        #         slime.idle_height = 27 * 4
+        #         if slime.x + 15 <= server.boy.x - 13:
+        #             slime.x = clamp(50, slime.x, server.boy.x - 12)
+        #         elif slime.x - 15 >= server.boy.x + 8:
+        #             slime.x = clamp(server.boy.x + 7, slime.x, 1024-50)
+        #         self.y = clamp(50, self.y, 768 - 50)
+        #     else:
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 5
         self.x += self.speed * math.cos(self.dir) * game_framework.frame_time
         self.y += self.speed * math.sin(self.dir) * game_framework.frame_time
