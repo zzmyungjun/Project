@@ -36,7 +36,11 @@ def handle_events():
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.change_state(main_state)
-
+        elif event.type == SDL_MOUSEBUTTONDOWN:
+            x, y = event.x, event.y
+            if x >= server.sword_1.x - 21 and x <= server.sword_1.x + 19:
+                if y >= server.sword_1.y - 19 and y <= server.sword_1.y + 21:
+                    game_world.remove_object(server.sword_1)
 
 def update():
     for game_object in game_world.all_objects():

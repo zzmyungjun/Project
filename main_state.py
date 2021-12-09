@@ -16,16 +16,17 @@ name = "main_state"
 
 def enter():
 
+    server.house = House()
     server.boy = Boy()
     server.village = Village()
     server.portal = Portal()
     server.npc1 = Npc1()
-    server.house = House()
     game_world.add_object(server.village, 0)
+    game_world.add_object(server.house, 1)
     game_world.add_object(server.portal, 1)
     game_world.add_object(server.npc1, 1)
     game_world.add_object(server.boy, 1)
-    game_world.add_object(server.house, 1)
+
 
 def exit():
     game_world.clear()

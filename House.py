@@ -18,6 +18,7 @@ class House:
         self.x, self.y = 800, 124
         self.frame = 0
 
+
     def draw(self):
         self.image.clip_draw((int(self.frame) * 217), 0, 217, 156, self.x, self.y)
 

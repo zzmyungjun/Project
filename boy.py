@@ -131,6 +131,7 @@ class AttackState:
 
     def enter(boy, event):
         if event == Z_DOWN:
+            boy.attack()
             if boy.dir_x == 1:
                 boy.height = 1
             elif boy.dir_x == -1:
@@ -186,6 +187,8 @@ class Boy:
     def __init__(self):
         self.x, self.y = 1024//2, 768//2
         self.image = load_image('boy_sprite.png')
+        self.attack_sound = load_wav('attack_sword.wav')
+        self.attack_sound.set_volume(32)
         self.font = load_font('ENCR10B.TTF', 12)
         self.dir_x = 0
         self.dir_y = 0
@@ -194,7 +197,7 @@ class Boy:
         self.frame = 0
         self.height = 6
         self.timer = 0
-        self.hp = 1000
+        self.hp = 10000
         self.event_que = []
         self.cur_state = RunState
         self.cur_state.enter(self, None)
@@ -203,6 +206,8 @@ class Boy:
         self.top = False
         self.bottom = False
 
+    def attack(self):
+        self.attack_sound.play()
 
     def change_state(self,  state):
         # fill here

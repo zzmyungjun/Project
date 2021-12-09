@@ -10,9 +10,10 @@ from pico2d import *
 from dungeon_portal import Portal
 from bossroom import Bossroom_1
 from boss import Boss1
+from at_stone import Stone
 from slime import Slime
 from boy import *
-
+from boss_hand import Hand
 
 name = "bossroom1_state"
 
@@ -53,15 +54,38 @@ def handle_events():
 def update():
     for game_object in game_world.all_objects():
         game_object.update()
-    for slime in server.slimes:
-        if collision.collide(server.boy, slime):
-            slime.idle_height = 4 * 27
-            server.boy.hp -= 1
-            if server.boy.cur_state == AttackState:
-                slime.hp -= 10
-                if slime.hp <= 0:
-                    server.slimes.remove(slime)
-                    game_world.remove_object(slime)
+    # for slime in server.slimes:
+    #     if collision.collide(server.boy, slime):
+    #         slime.idle_height = 4 * 27
+    #         server.boy.hp -= 1
+    #         if server.boy.cur_state == AttackState:
+    #             slime.hp -= 10
+    #             if slime.hp <= 0:
+    #                 server.slimes.remove(slime)
+    #                 game_world.remove_object(slime)
+    if server.boss1.height >= 2 and server.boss1.height < 3:
+        server.stone = Stone()
+        game_world.add_object(server.stone, 1)
+        if server.stone.count == 0:
+            server.stone.shotgun()
+            server.stone.count = 1
+        if collision.collide(server.boy, server.stone):
+            server.boy.hp -= 3
+
+    if server.boss1.height >= 3 and server.boss1.height < 3.5:
+        server.hand = Hand()
+        game_world.add_object(server.hand, 1)
+        delay(0.01)
+        if collision.collide(server.boy, server.hand):
+            server.boy.hp -= 100
+
+    if collision.collide(server.boss1,server.boy):
+        server.boy.hp -= 1.5
+        if server.boy.cur_state == AttackState:
+            server.boss1.hp -= 2
+            if server.boss1.hp <= 0:
+                game_framework.change_state(loading_state)
+
 
     # if len(server.slimes) == 0:
     #     delay(1)

@@ -12,7 +12,9 @@ b = 0
 
 def enter():
     server.animation = load_image('bubble_sprite.png')
-
+    server.animation.bgm = load_music('Wind from the Far Eastmp3.mp3')
+    server.animation.bgm.set_volume(64)
+    server.animation.bgm.repeat_play()
 
 def exit():
     del(server.animation)
@@ -27,9 +29,9 @@ def handle_events():
             if (event.type, event.key) == (SDL_KEYDOWN, SDLK_ESCAPE):
                 game_framework.change_state(main_state)
             elif (event.type, event.key) == (SDL_KEYDOWN, SDLK_SPACE):
+                game_framework.change_state(dungeon_state)
+            elif (event.type, event.key) == (SDL_KEYDOWN, SDLK_b) and server.count == 1:
                 game_framework.change_state(bossroom1_state)
-            # elif (event.type, event.key) == (SDL_KEYDOWN, SDLK_b) and server.count == 1:
-            #     game_framework.change_state(bossroom1_state)
 
 
 def draw():

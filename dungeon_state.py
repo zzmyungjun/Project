@@ -20,7 +20,6 @@ def enter():
     server.dungeon = Dungeon()
     server.slimes = [Slime() for i in range(6)]
     server.portal = Portal()
-
     game_world.add_object(server.dungeon, 0)
     game_world.add_objects(server.slimes, 1)
     game_world.add_object(server.boy, 1)
